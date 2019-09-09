@@ -1,1 +1,74 @@
-# java-
+# java-基础之集合
+
+一.list、set、map
+  1.list（顺序）：不唯一、有序
+  2.set（独一无二）：不重复
+  3.map（key搜索）：使用键值对存储，两个key可以引用相同的对象，key不能重复，典型的key是string类型，也可以是其他类型
+二.ArrayList和LinkedList
+  1.线程安全：都不同步、都不安全
+  2.底层数据结构：ArrayList使用object数组、LinkedList使用双向链表（jdk1.6之前是循环链表、jdk1.7取消循环）
+  3.插入和删除是否受元素位置影响
+    ArrayList采用数组存储，受，默认添加到末尾，复杂度为o(1)；指定位置i插入，复杂度为o(n-i)，因为第i和其后元素都要向后移动
+    LinkedList采用链表存储，插入删除不受影响，O(1)
+  4.是否支持快速随机访问：通过元素序号进行访问，ArrayList支持、linkedlist不支持
+  5.内存空间占用：ArrayList浪费主要是list列表结尾会预留一定的容量空间、linkedlist空间花费则体现在它的每一个元素耗费比ArrayList更多（要存放直接后继、直接前驱、数据）
+三.RandomAccess接口
+  该接口中什么都没定义，作为一个标识，标识这个接口的类具有随机访问功能，但是并不是说ArrayList实现randomaccess接口才具有快速随机访问的功能
+  实现RandomAccess接口的list，优先选择普通for循环、其次foreach
+  未实现优先选择iterator遍历（foreach遍历底层也是通过iterator实现的）
+四.双向链表和双向循环链表
+  双向链表：包含两个指针，prev指向前一个结点，next指向后一个结点、数据域data
+  双向循环链表：最后一个节点的next指向head，而head的prev指向最后一个节点，构成一个环
+五.ArrayList和vector
+  vector类的所有方法都是同步的，两个线程安全访问一个vector，一个线程访问vector在同步操作上耗费大量时间
+  ArrayList不同步，不需要保证线程安全时建议使用
+六.ArrayList扩容机制
+  以无参数构造方法创建ArrayList时，实际上初始化赋值的是一个空数组，当真正对数组进行添加元素操作时，才真正分配容量，向数组中添加第一个元素时，数组容量扩为10
+  每次扩容都会变为原来的1.5倍
+六.length、length()、size()区分
+  length针对数组、声明一个数组想知道数组的长度
+  length()针对字符串，想知道字符串长度
+  size()针对泛型集合，看泛型有多少个元素
+七.hashmap、hashtable
+  1.线程安全：hashmap不安全、hashtable内部的方法基本都经过synchronized修饰，安全
+  2.效率：因为线程安全问题，hashmap效率比hashtable效率高一点
+  3.null key 和 null value：hashmap中，null可以作为键，这样的键只有一个，可以有一个或多个键所对应的值为null，hashtable只要put进的键值只要有一个是null就会抛出空指针异常
+  4.初始容量和每次扩容大小：
+    初始容量：hashtable是11，hashmap是16
+    扩容：hashtable是2n+1，hashmap是2倍
+    hashtable如果初始给定容量大小则先使用、hashmap会先将其扩容为2的幂次方
+  5.底层数据结构：
+    hashmap：在解决哈希冲突时，当链表长度大于阈值（默认为8）时，将链表转化为红黑树，以减少搜索时间
+八.hashmap和hashset的区别
+  hashset底层是基于hashmap实现的
+  实现接口：hashmap->map;hashset->set
+  存储：hashmap存储键值对、hashset存储对象
+  添加：hashmap调用put()向map中添加元素、hashset调用add()方法向set中添加元素
+  hashmap使用键（key）计算hashcode、hashset使用成员对象来计算hashcode值，对于两个对象来说hashcode可能相同，所以equals()方法用来判断对象的相等性
+九.hashset如何检查重复
+  hashcode值判断对象加入的位置，如果相同hashcode值，调用equals方法检查对象是否相同，相同则不会插入成功
+十.hashcode()与equals()相关规定
+  对象相等，hashcode、equals都相等
+  对象hashcode相同，不一定相等
+  equals被覆盖则hashcode也必须被覆盖
+  如果没有重写hashcode()则该class的两个对象无论如何都不会相等
+十一.hashmap底层实现
+    数组和链表，hash值相同则直接覆盖、不同则使用拉链法解决冲突
+十二.拉链法：将数组和链表结合，创建一个链表数组，数组中每一格就是一个链表，若遇到哈希冲突，则将冲突的值加到链表中；jdk1.8版本之后，当链表的长度大于阈值（默认为8）时，将链表转化为红黑树，以减少搜索时间
+十三.concurrenthashmap、hashtable
+    1.底层数据结构：1.7之前concurrenthashmap采用分段数组+链表，1.8之后采用hashmap的数组+链表/红黑树
+                  hashtable：数组＋链表
+    2.实现线程安全的方式：
+      1.7之前是concurrenthashmap（分段锁），每一把锁只锁其中一部分数据，多线程访问容器中不同数据段的数据就不会存在锁竞争，提高并发访问率，1.8后采用数组链表红黑树结构，并发采用synchronized
+      hashtable（同一把锁）：使用synchronized保证线程安全，效率低下，当一个线程访问同步方法时，其他线程访问同步方法可能会进入阻塞状态
+十四.集合框架底层数据结构总结
+  Collection:list(顺序):arraylist（object数组）、vector（object数组）、linkedlist（双向链表1.6循环、1.7取消循环）
+             set（独一无二）:hashset(无序、唯一、基于hashmap实现)、linkedhashset(hashset实现)、treeset（有序、唯一：红黑树、自平衡的排序二叉树）
+  map:hashmap、linkedhashmap、hashtable、treemap
+十五.如何选用集合
+    根据键值对获取元素值：map接口下的集合
+    排序：treemap
+    不排序：hashmap
+    线程安全：concurrenthashmap
+    只需要存放元素：实现collection接口的集合
+    需要保证元素唯一：选择实现list接口ArrayList、linkedlist
